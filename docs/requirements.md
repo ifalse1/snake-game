@@ -3,7 +3,8 @@ CS5410 Final Project
 
 ## Requirements
 *Copied from project requirements*
-Assignment
+
+### Assignment
 
 Write a multiplayer snake game patterned after the following: https://snake.io/
 
@@ -83,3 +84,4 @@ Must substantially implement the snake.io game play, using the actual game as a 
 + Resource that has a lot of textures, sprites, animated sprites, and audio: https://opengameart.org/ 
 + Another resource that has sprites and animated sprites from existing games: https://www.spriters-resource.com/
 + Resource that has a good sets of sounds from other games: https://www.sounds-resource.com/
++ Prof. Mathias' GitHub: ProfPorkins
