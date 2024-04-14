@@ -15,6 +15,8 @@
 5. Test, test, test (we should be testing throughout the entire thing)
     + Due Tuesday 4/23
 
++ we will have to redo this
+
 
 
 
