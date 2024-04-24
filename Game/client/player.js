@@ -1,10 +1,10 @@
+import { Helper } from './helper.js';
+
 class Player {
-    constructor(initialPosition, borderWidth, worldWidth, worldHeight) {
-        this.snake = initialPosition;
-        this.borderWidth = borderWidth;
-        this.worldWidth = worldWidth
-        this.worldHeight = worldHeight;
+    constructor(x, y, world) {
+        this.world = world;
         this.movingDirection = { x: 0, y: 0 };
+        this.snake = { x: x, y: y};
     }
 
     update() {
@@ -19,16 +19,20 @@ class Player {
         }
     }
 
+    getPosition() {
+        return this.snake;
+    }
+
     setMovingDirection(direction) {
         this.movingDirection = direction;
     }
 
     isInsideBorder(x, y) {
         return (
-            x >= this.borderWidth / 2 &&
-            y >= this.borderWidth / 2 &&
-            x <= this.worldWidth - this.borderWidth / 2 &&
-            y <= this.worldHeight - this.borderWidth / 2
+            x < this.world.width - 15 &&
+            y < this.world.height - 15 &&
+            x > this.world.border &&
+            y > this.world.border
         );
     }
 }
