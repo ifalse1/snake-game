@@ -7,7 +7,6 @@ class Game {
         this.io = socketIO(server);
         this.lastUpdate = Date.now();
         this.updateInterval = 15;
-        this.SPEED = 5;
     }
     
     socketResponses() {
@@ -20,8 +19,8 @@ class Game {
             this.players[socket.id] = {
                 x: 0,
                 y: 0,
-                movingDirection: { x: 0, y: -this.SPEED },
-                sequenceNumber: 0
+                direction: { x: 0, y: -5 },
+                sequenceNumber: 0,
             };
 
             socket.on('disconnect', () => {
@@ -30,32 +29,14 @@ class Game {
                 this.io.emit('updatePlayers', this.players);
             });
 
-            socket.on('keyInput', ({ keycode }) => {
+            socket.on('keyInput', (keycode) => {
                 if (Date.now() - this.lastUpdate >= this.updateInterval) {
                     switch (keycode) {
-                        case 'up':
-                            this.players[socket.id].movingDirection = { x: 0, y: 0 };
-                            if (this.players[socket.id].movingDirection.y >= -this.SPEED) {
-                                this.players[socket.id].movingDirection.y += -this.SPEED;
-                            }
-                            break;
-                        case 'down':
-                            this.players[socket.id].movingDirection = { x: 0, y: 0 };
-                            if (this.players[socket.id].movingDirection.y <= this.SPEED) {
-                                this.players[socket.id].movingDirection.y += this.SPEED;
-                            }
-                            break;
                         case 'left':
-                            this.players[socket.id].movingDirection = { x: 0, y: 0 };
-                            if (this.players[socket.id].movingDirection.x >= -this.SPEED) {
-                                this.players[socket.id].movingDirection.x += -this.SPEED;
-                            }
+                            this.rotate(this.players[socket.id], 90);
                             break;
                         case 'right':
-                            this.players[socket.id].movingDirection = { x: 0, y: 0 };
-                            if (this.players[socket.id].movingDirection.x <= this.SPEED) {
-                                this.players[socket.id].movingDirection.x += this.SPEED;
-                            }
+                            this.rotate(this.players[socket.id], -90);
                             break;
                     }
                 }
@@ -84,20 +65,29 @@ class Game {
 
     update(player) {
         // Calculate new head position based on the moving direction
-        const newHeadX = player.x + player.movingDirection.x;
-        const newHeadY = player.y + player.movingDirection.y;
+        const newHeadX = player.x + player.direction.x;
+        const newHeadY = player.y + player.direction.y;
 
         // Check if the new head position is inside the border
         if (this.isInsideBorder(newHeadX, newHeadY)) {
             player.x = newHeadX;
             player.y = newHeadY;
-            player.sequenceNumber++;
+            //player.sequenceNumber++;
+            //console.log(player.sequenceNumber);
         }
+    }
+
+    rotate(player, degrees) {
+        const radians = (Math.PI / 180) * degrees;
+        const newX = player.direction.x * Math.cos(radians) - player.direction.y * Math.sin(radians);
+        const newY = player.direction.x * Math.sin(radians) + player.direction.y * Math.cos(radians);
+        player.direction.x = Math.round(newX);
+        player.direction.y = Math.round(newY);
     }
 
     gameLoop() {
         for (let id in this.players) {
-            if (this.players[id].movingDirection) {
+            if (this.players[id].direction) {
                 this.update(this.players[id]);
             }
         }

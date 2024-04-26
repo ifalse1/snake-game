@@ -1,4 +1,5 @@
 import Player from './player.js';
+import InputHandler from './inputHandler.js';
 import { Helper } from './helper.js';
 
 const socket = io();
@@ -12,9 +13,6 @@ const world = { height: 3239, width: 5759, border: 5};
 
 let players = {};
 
-const SPEED = 5;
-const interpolationFactor = 0.5;
-
 let camera = {
     x: 0,
     y: 0,
@@ -26,6 +24,8 @@ let playerX = Helper.randomInt(world.border / 2, world.width - world.border / 2)
 let playerY = Helper.randomInt(world.border / 2, world.height - world.border / 2);
 
 let localPlayer = new Player(playerX, playerY, world);
+
+let inputHandler = new InputHandler({ left: 'ArrowLeft', right: 'ArrowRight' }, localPlayer, socket);
 
 socket.on('setLocalPlayer', (id) => {
     players[id] = localPlayer;
@@ -46,7 +46,7 @@ socket.on('updatePlayers', (serverPlayers) => {
             players[id].prevY = players[id].head.y;
             players[id].head.x = serverPlayer.x;
             players[id].head.y = serverPlayer.y;
-            players[id].movingDirection = serverPlayer.movingDirection;
+            players[id].direction = serverPlayer.direction;
         }
     }
 
@@ -77,105 +77,18 @@ function render() {
     ctx.drawImage(backgroundImage, -camera.x, -camera.y, world.width, world.height);
     drawBorder();
     for (let id in players) {
-        let player = players[id];
-        let interpX = player.prevX + (player.head.x - player.prevX) * interpolationFactor;
-        let interpY = player.prevY + (player.head.y - player.prevY) * interpolationFactor;
-        player.drawPlayer(ctx, camera, interpX, interpY);
+        players[id].drawPlayer(ctx, camera);
     }
-}
-
-
-const keys = {
-    up: {
-        pressed: false
-    },
-    right: {
-        pressed: false
-    },
-    left: {
-        pressed: false
-    },
-    down: {
-        pressed: false
-    }
-}
-
-setInterval(() => {
-    if (keys.up.pressed) {
-        localPlayer.movingDirection = { x: 0, y: 0 };
-        if (localPlayer.movingDirection.y > -SPEED) {
-            localPlayer.movingDirection.y += -SPEED;
-        }
-        socket.emit('keyInput', { keycode: 'up', sequenceNumber: localPlayer.getInputs() });
-    }
-    if (keys.down.pressed) {
-        localPlayer.movingDirection = { x: 0, y: 0 };
-        if (localPlayer.movingDirection.y < SPEED) {
-            localPlayer.movingDirection.y += SPEED;
-        }
-        socket.emit('keyInput', { keycode: 'down', sequenceNumber: localPlayer.getInputs() });
-    }
-    if (keys.left.pressed) {
-        localPlayer.movingDirection = { x: 0, y: 0 };
-        if (localPlayer.movingDirection.x > -SPEED) {
-            localPlayer.movingDirection.x += -SPEED;
-        }
-        socket.emit('keyInput', { keycode: 'left', sequenceNumber: localPlayer.getInputs() });
-        socket.emit('changeSequence')
-    }
-    if (keys.right.pressed) {
-        localPlayer.movingDirection = { x: 0, y: 0 };
-        if (localPlayer.movingDirection.x < SPEED) {
-            localPlayer.movingDirection.x += SPEED;
-        }
-        socket.emit('keyInput', { keycode: 'right', sequenceNumber: localPlayer.getInputs() });
-    }
-}, 50)
-
-function userInput() {
-    window.addEventListener('keydown', function(event) {
-        switch (event.key) {
-            case 'ArrowUp':
-                keys.up.pressed = true;
-                break;
-            case 'ArrowDown':
-                keys.down.pressed = true;
-                break;
-            case 'ArrowLeft':
-                keys.left.pressed = true;
-                break;
-            case 'ArrowRight':
-                keys.right.pressed = true;
-                break;
-        }
-    });
-
-    window.addEventListener('keyup', (event) => {
-        switch (event.key) {
-            case 'ArrowUp':
-                keys.up.pressed = false;
-                break;
-            case 'ArrowDown':
-                keys.down.pressed = false;
-                break;
-            case 'ArrowLeft':
-                keys.left.pressed = false;
-                break;
-            case 'ArrowRight':
-                keys.right.pressed = false;
-                break;
-        }
-    })
 }
 
 setInterval(() => {
     localPlayer.update();
-}, 50)
+}, 15)
 
 function update() {
     //localPlayer.update();
     updateCamera();
-    userInput();
+    inputHandler.userInput();
 }
 
 function gameLoop() {
