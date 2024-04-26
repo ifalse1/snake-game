@@ -21,6 +21,7 @@ class Game {
                 y: 0,
                 direction: { x: 0, y: -5 },
                 sequenceNumber: 0,
+                segements: []
             };
 
             socket.on('disconnect', () => {

@@ -42,8 +42,6 @@ socket.on('updatePlayers', (serverPlayers) => {
             players[id] = new Player(serverPlayer.x, serverPlayer.y, world);
             //console.log(players[id].head.x);
         } else {
-            players[id].prevX = players[id].head.x;
-            players[id].prevY = players[id].head.y;
             players[id].head.x = serverPlayer.x;
             players[id].head.y = serverPlayer.y;
             players[id].direction = serverPlayer.direction;

@@ -1,18 +1,18 @@
 class Segment {
-    constructor() {
-        this.movementQueue = [];
-        this.x;
-        this.y;
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+
+        this.imgSegment = new Image();
+        this.imgSegment.src = './Assets/segment.png';
     }
 
     draw(ctx, camera) {
-        
+        ctx.save();
+        ctx.translate(this.x - camera.x, this.y - camera.y);
+        ctx.drawImage(this.imgSegment, -20, -20, 40, 40); // Adjust size as needed
+        ctx.restore();
     }
-
-    update() {
-
-    }
-
 }
 
 class Player {
@@ -22,40 +22,47 @@ class Player {
         this.head = { x: x, y: y};
         this.segments = [];
         this.tail = {};
-        this.startingSegments = 3;
-
+        this.startingSegments = 5;
+        this.movementQueue = [];
         this.sequenceNumber = 0;
-        this.playerInputs = [];
 
         this.imgHead = new Image();
         this.imgHead.src = './Assets/head.png'
 
         for (let i = 0; i < this.startingSegments; i++) {
-            let segment = new Segment()
-            this.segments.push(segment);
+            this.segments.push(new Segment(x, y));
         }
-
-        console.log(this.segments);
 
         //this.invincibilty
     }
 
     update() {
-        // Calculate new head position based on the moving direction
         const newHeadX = this.head.x + this.direction.x;
         const newHeadY = this.head.y + this.direction.y;
 
-        // Check if the new head position is inside the border
         if (this.isInsideBorder(newHeadX, newHeadY)) {
-            //this.sequenceNumber++;
+            // Adds head position to movement queue for segments
+            if (this.sequenceNumber % 3 == 0) {
+                this.movementQueue.unshift({x: this.head.x, y: this.head.y}); // Add current head position to history
+            }
 
             this.head.x = newHeadX;
             this.head.y = newHeadY;
 
-            //console.log(this.movingDirection);
-            //this.playerInputs.push({ sequenceNumber: this.sequenceNumber, movement: this.movingDirection});
-            //console.log(`${this.head.x}/${this.head.y} : ${Date.now()}`)
-            //console.log(this.playerInputs[this.playerInputs.length - 1].sequenceNumber);
+            // Update segment positions
+            this.segments.forEach((segment, index) => {
+                let movementIndex = (index + 1) * 3; // Shifts segments and provides space
+                if (this.movementQueue[movementIndex]) { // Check if there's a history position for this segment
+                    segment.x = this.movementQueue[movementIndex].x;
+                    segment.y = this.movementQueue[movementIndex].y;
+                }
+            });
+
+            if (this.movementQueue.length > this.segments.length * 3) {
+                this.movementQueue.pop(); // Remove the oldest position not needed anymore
+            }
+
+            this.sequenceNumber++;
         }
     }
 
@@ -67,15 +74,9 @@ class Player {
         this.direction.y = Math.round(newY);
     }
 
-    getInputs() {
-        return this.playerInputs;
-    }
-
-    spliceInputs(spliceIndex) {
-        this.playerInputs.splice(0, spliceIndex);
-    }
-
     drawPlayer(ctx, camera) {
+        this.segments.forEach(segment => segment.draw(ctx, camera));
+
         const angle = Math.atan2(this.direction.y, this.direction.x) - Math.PI/2;
         ctx.save();
         ctx.translate(this.head.x - camera.x, this.head.y - camera.y);
