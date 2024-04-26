@@ -23,3 +23,7 @@
 8. Show players name next to head
 9. Food must have multiple different kinds, sizes, and animated sprites
 10. Particle effects when food is eaten and collision
+
+
+# BUGS
+    - leaving page slows down other players
