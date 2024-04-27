@@ -47,13 +47,15 @@ class InputHandler {
     }
 
     startRotating(angle, direction) {
-        if (!this.rotationInterval) {
+        if (!this.rotationInterval && !this.player.isDead) {
             this.socket.emit('keyInput', direction);
+            //this.socket.emit('updateSegments', this.player.segments)
             this.player.rotate(angle);
             this.rotationInterval = setInterval(() => {
                 this.player.rotate(angle);
             }, 500);
         }
+        
     }
 
     stopRotating() {
